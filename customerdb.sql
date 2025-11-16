@@ -1,0 +1,166 @@
+CREATE DATABASE IF NOT EXISTS customerdb;
+USE customerdb;
+create table Customer (
+CustomerID BIGINT PRIMARY KEY auto_increment,
+FirstName VARCHAR (80) NOT NULL,
+LastName VARCHAR (80) NOT NULL,
+Email VARCHAR (80) NOT NULL UNIQUE,
+Phone VARCHAR (25),
+CreatedAt DATETIME(6) NOT NULL DEFAULT (CURRENT_TIMESTAMP(6))
+);
+
+SHOW TABLES;
+describe Customer;
+
+Insert into Customer (FirstName, LastName, Email, Phone)
+values ('Primary', 'Client', 'primary.client@example.com', '813-555-0001');
+SELECT 
+    *
+FROM
+    Customer;
+    
+CREATE TABLE IF NOT EXISTS Address (
+AddressID BIGINT PRIMARY KEY AUTO_INCREMENT,
+CustomerID BIGINT NOT NULL,
+AddressLine1 VARCHAR(120) NOT NULL,
+AddressLine2 VARCHAR(120) NULL,
+City VARCHAR(80) NOT NULL,
+State VARCHAR(80) NOT NULL,
+ZipCode VARCHAR(20) NOT NULL,
+Country VARCHAR (80) NOT NULL DEFAULT 'US',
+IsPrimary BOOLEAN NOT NULL DEFAULT FALSE,
+CONSTRAINT FK_Address_Customer FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID)
+);    
+
+USE customerdb;
+CREATE TABLE IF NOT EXISTS PaymentMethod (
+    PaymentMethodID TINYINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    MethodName VARCHAR(30) NOT NULL UNIQUE
+);
+
+INSERT IGNORE INTO PaymentMethod (MethodName)
+VALUES ('Cash'), ('Card'), ('ACH'), ('Gift Card');
+
+CREATE TABLE IF NOT EXISTS OrderStatus (
+    OrderStatusID TINYINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    StatusName VARCHAR(30) NOT NULL UNIQUE
+);
+
+INSERT IGNORE INTO OrderStatus (StatusName)
+VALUES ('Pending'), ('Paid'), ('Shipped'), ('Cancelled'), ('Refunded');
+
+SHOW TABLES;
+SELECT 
+    *
+FROM
+    PaymentMethod;
+SELECT 
+    *
+FROM
+    OrderStatus;
+
+USE customerdb;
+CREATE TABLE IF NOT EXISTS Employee (
+    EmployeeID INT PRIMARY KEY AUTO_INCREMENT,
+    FirstName VARCHAR(80) NOT NULL,
+    LastName VARCHAR(80) NOT NULL,
+    Email VARCHAR(255) NOT NULL UNIQUE,
+    Role VARCHAR(80) NOT NULL,
+    IsActive BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+INSERT IGNORE INTO Employee (FirstName, LastName, Email, Role)
+VALUES
+('John','Doe','john.doe@example.com','CSR'),
+('Jane', 'Doe', 'jane.doe@example.com', 'Technician');
+
+SHOW TABLES;
+SELECT 
+    *
+FROM
+    Employee;
+    
+CREATE TABLE IF NOT EXISTS OrderMethod (
+OrderMethodID TINYINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+MethodName VARCHAR(20) NOT NULL UNIQUE
+);
+    
+USE customerdb;
+
+CREATE TABLE IF NOT EXISTS `Order` (
+OrderID BIGINT PRIMARY KEY AUTO_INCREMENT,
+CustomerID BIGINT NOT NULL,
+EmployeeID INT NULL,
+OrderStatusID TINYINT UNSIGNED NOT NULL,
+OrderMethodID TINYINT UNSIGNED NOT NULL,
+AddressID BIGINT NULL,
+OrderDate DATETIME(6) NOT NULL DEFAULT (CURRENT_TIMESTAMP(6)),
+RequiredDate DATETIME(6) NULL,
+ShippedDate DATETIME(6) NULL,
+CONSTRAINT FK_Order_Customer FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID),
+CONSTRAINT FK_Order_Employee FOREIGN KEY (EmployeeID) REFERENCES Employee(EmployeeID),
+CONSTRAINT FK_Order_Order_status FOREIGN KEY (OrderStatusID) REFERENCES OrderStatus(OrderStatusID),
+CONSTRAINT FK_Order_Method FOREIGN KEY (OrderMethodID) REFERENCES OrderMethod(OrderMethodID),
+CONSTRAINT FK_Order_Address  FOREIGN KEY (AddressID) REFERENCES Address(AddressID)
+);
+
+SHOW TABLES;
+DESCRIBE `Order`;
+
+USE customerdb;
+
+CREATE TABLE IF NOT EXISTS Product (
+  ProductID INT PRIMARY KEY AUTO_INCREMENT,
+  Sku VARCHAR(50) NOT NULL UNIQUE,
+  ProductName VARCHAR(150) NOT NULL,
+  UnitPrice DECIMAL(10,2) NOT NULL,
+  IsActive  BOOLEAN NOT NULL DEFAULT TRUE,
+  CreatedAt DATETIME(6) NOT NULL DEFAULT (CURRENT_TIMESTAMP(6))
+);
+
+SHOW TABLES;
+DESCRIBE Product;
+
+USE customerdb;
+
+CREATE TABLE IF NOT EXISTS OrderItem (
+OrderItemID BIGINT PRIMARY KEY AUTO_INCREMENT,
+OrderID BIGINT NOT NULL,
+ProductID INT NOT NULL,
+Quantity INT NOT NULL,
+UnitPriceAtSale DECIMAL (10,2) NOT NULL,
+DiscountPct DECIMAL (5,2) NOT NULL DEFAULT 0.00,
+CONSTRAINT FK_Order_Order FOREIGN KEY (OrderID) REFERENCES `Order`(OrderID),
+CONSTRAINT FK_Order_Product FOREIGN KEY (ProductID) REFERENCES Product(ProductID)
+);
+
+SHOW TABLES;
+DESCRIBE OrderItem;
+
+USE customerdb;
+
+CREATE TABLE IF NOT EXISTS Payment (
+PaymentID BIGINT PRIMARY KEY Auto_Increment,
+OrderID BIGINT NOT NULL,
+PaymentMethodID TINYINT UNSIGNED NOT NULL,
+Amount DECIMAL(10,2) NOT NULL,
+PaidAt DATETIME(6) NOT NULL DEFAULT (CURRENT_TIMESTAMP(6)),
+Reference VARCHAR(120) NULL,
+CONSTRAINT FK_Payment_Order FOREIGN KEY (OrderID) REFERENCES `Order` (OrderID),
+CONSTRAINT FK_Payment_Method FOREIGN KEY (PaymentMethodID) REFERENCES PaymentMethod(PaymentMethodID)
+);
+
+USE customerdb;
+
+CREATE TABLE IF NOT EXISTS CustomerNote (
+NoteID BIGINT PRIMARY KEY AUTO_INCREMENT,
+CustomerID BIGINT NOT NULL,
+CreatedByEmployeeID INT Null,
+NoteText VARCHAR(2000) NOT NULL,
+CreatedAt DATETIME(6) NOT NULL DEFAULT (CURRENT_TIMESTAMP(6)),
+CONSTRAINT FK_CustNote_Customer FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID),
+CONSTRAINT FK_CustNote_Employee FOREIGN KEY (CreatedByEmployeeID) REFERENCES Employee(EmployeeID)
+);
+
+
+
